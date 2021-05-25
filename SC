@@ -3,11 +3,14 @@ local chr = game.Players.LocalPlayer.Character
 getgenv().coins = false;
 getgenv().Fizz = false;
 getgenv().Pet = false;
+getgenv().Rebirth = false;
+getgenv().Upgrades = false;
 local SelectEgg
+local SelectingReb
 
 -- Tablolar 
 local EggTab = {}
-
+local RebirthTab = {}
 
 -- Otomatik Yumurta Dropdown Güncelleyici
 local Eggs = game:GetService("Workspace").GameMechanics.EggCapsules:GetChildren()
@@ -17,6 +20,15 @@ for i = 1,#Eggs do
        table.insert(EggTab,v.Name) 
     end
 end
+-- Otomatik Rebirth Dropdown Güncelleyici 
+local RebirthFrame = game:GetService("Players").LocalPlayer.PlayerGui.RebirthGui.RebirthFrame.Background.RebirthFrame:GetDescendants()
+for i = 1,#RebirthFrame do 
+    local v = RebirthFrame[i]
+    if v.Name == "RebirthAmount" then 
+    table.insert(RebirthTab,v.Value)    
+    end
+end
+
 
 -- fonksiyonlar
 local Functions = {}; do
@@ -69,7 +81,27 @@ local Functions = {}; do
                    if v:IsA("Model") and v.Name == SelectEgg then 
                    game:GetService("ReplicatedStorage").Events.Pets.RollForPet:FireServer(v.Name,"1")
                         game:GetService("CoreGui").PurchasePromptApp.Enabled = false
-                        wait()
+                        wait(1)
+                    end
+                end
+            end
+        end)
+    end
+    function Functions.Rebirth()
+        spawn(function()
+            while getgenv().Rebirth == true do 
+            wait()
+            game:GetService("ReplicatedStorage").Events.GameMechanics.Events.RebirthEvent:FireServer(tonumber(SelectingReb)) -- miktar
+            end
+        end)
+    end
+    function Functions.Upgrade()
+        spawn(function()
+            while getgenv().Upgrades == true do 
+                wait()
+                for i,v in pairs(game:GetService("Players").LocalPlayer.PlayerGui.CoinUpgradeUI.MainFrame.UpgradesFrame.MainFrame.Display.ScrollMainBG.ScrollingFrame:GetDescendants()) do 
+                    if v.Name == "UpgradeName"  then 
+                    game:GetService("ReplicatedStorage").Events.GameMechanics.Events.CoinUpgradeEvent:FireServer(v.Text)
                     end
                 end
             end
@@ -100,6 +132,16 @@ b:Toggle("Collect Coins",function(bool)
         Functions.Coins()
     end
 end)
+b:Toggle("Auto Rebirth",function(bool)
+    getgenv().Rebirth = bool
+    if bool then 
+        Functions.Rebirth()
+    end
+end)
+b:Dropdown("Select Reb Amount",RebirthTab,true,function(SelectReb)
+    SelectingReb = SelectReb
+end)
+
 
 local b2 = w:CreateFolder("Egg")
 b2:Toggle("Buy Pet",function(bool)
@@ -112,4 +154,72 @@ b2:Dropdown("Select Egg",EggTab,true,function(Egg)
     SelectEgg = Egg
 end)
 
-b2:DestroyGui()
+local b3 = w:CreateFolder("Get/Buy")
+b3:Toggle("Auto Coin Upgrades",function(bool)
+    getgenv().Upgrades = bool
+    if bool then 
+       Functions.Upgrade() 
+    end
+end)
+
+
+b3:Button("Claim Chest Reward",function()
+    Functions.ClaimChest()
+end)
+
+local w2 = library:CreateWindow("Main2")
+local b4 = w2:CreateFolder("PlayerStats")
+b4:Slider("WalkSpeed",{
+    min = 10; -- min value of the slider
+    max = 200; -- max value of the slider
+    precise = true; -- max 2 decimals
+},function(value)
+game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = value
+end)
+
+b4:Slider("JumpPower",{
+    min = 10; -- min value of the slider
+    max = 200; -- max value of the slider
+    precise = true; -- max 2 decimals
+},function(value)
+game.Players.LocalPlayer.Character.Humanoid.JumpPower = value
+end)
+
+b4:Button("infinite jump",function()
+local UIS = game:GetService("UserInputService")
+local hum = game.Players.LocalPlayer.Character.Humanoid
+local function Input(key)
+    if key.KeyCode == Enum.KeyCode.Space then 
+    hum:ChangeState(3)
+    end
+end
+UIS.InputBegan:Connect(Input)
+end)
+b4:Button("Anti Afk",function()
+local vu = game:GetService("VirtualUser")
+game:GetService("Players").LocalPlayer.Idled:connect(function()
+  vu:Button2Down(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
+  wait(1)
+  vu:Button2Up(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
+end)
+end)
+local b5 = w2:CreateFolder("Credits")
+
+b5:Button("Copy Discord Server Link",function()
+    setclipboard("https://discord.gg/yK3aecv")
+end)
+
+b5:Label("Discord Server:https://discord.gg/yK3aecv",{
+    TextSize = 13; -- Self Explaining
+    TextColor = Color3.fromRGB(255,255,255); -- Self Explaining
+    BgColor = Color3.fromRGB(69,69,69); -- Self Explaining
+    
+}) 
+b5:DestroyGui()
+b5:Label("Made By:efeeee#8151",{
+    TextSize = 13; -- Self Explaining
+    TextColor = Color3.fromRGB(255,255,255); -- Self Explaining
+    BgColor = Color3.fromRGB(69,69,69); -- Self Explaining
+    
+}) 
+
