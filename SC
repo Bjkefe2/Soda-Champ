@@ -1,0 +1,115 @@
+-- Options
+local chr = game.Players.LocalPlayer.Character
+getgenv().coins = false;
+getgenv().Fizz = false;
+getgenv().Pet = false;
+local SelectEgg
+
+-- Tablolar 
+local EggTab = {}
+
+
+-- Otomatik Yumurta Dropdown Güncelleyici
+local Eggs = game:GetService("Workspace").GameMechanics.EggCapsules:GetChildren()
+for i = 1,#Eggs do 
+    local v = Eggs[i]
+    if v:IsA("Model") then 
+       table.insert(EggTab,v.Name) 
+    end
+end
+
+-- fonksiyonlar
+local Functions = {}; do
+    function Functions.Fizz()
+        spawn(function()
+            while getgenv().Fizz == true do 
+            wait()
+            game:GetService("ReplicatedStorage").Events.GameMechanics.Events.TappingEvent:FireServer()
+            end
+        end)
+    end
+    
+    function Functions.Coins()
+        spawn(function()
+            while game:GetService("RunService").RenderStepped:Wait(1) do
+                if getgenv().coins == true then 
+                    for i,v in pairs(game:GetService("Workspace").Drops:GetDescendants()) do 
+                        local math1 = math.random(1,i)
+                        local math2 = math.random(1,i)
+                        local math3 = math.random(1,i)
+                        local math4 = math.random(1,i)
+                        local math5 = math.random(1,i)
+                        local math6 = math.random(1,i)
+                        local math7 = math.random(1,i)
+                        local math8 = math.random(1,i)
+                        if math1 or math2 or math3 or math4 or math5 or math6 or math7 or math8 then
+                            if v:IsA("TouchTransmitter") then 
+                            chr:SetPrimaryPartCFrame(v.Parent.CFrame)
+                            wait(1)
+                            end
+                        end
+                    end
+                end
+            end
+        end)
+    end
+    
+    function Functions.ClaimChest()
+    firetouchinterest(chr.HumanoidRootPart,game:GetService("Workspace").GameMechanics.Chests.FrostChest.ClaimPad.MainPad,0)
+    firetouchinterest(chr.HumanoidRootPart,game:GetService("Workspace").GameMechanics.Chests.MagmaChest.ClaimPad.MainPad,0)
+    firetouchinterest(chr.HumanoidRootPart,game:GetService("Workspace").GameMechanics.Chests.NovaChest.ClaimPad.MainPart,0)
+    firetouchinterest(chr.HumanoidRootPart,game:GetService("Workspace").GameMechanics.Chests.NovaMiniChest.ClaimPad.MainPart,0)
+    firetouchinterest(chr.HumanoidRootPart,game:GetService("Workspace").GameMechanics.Chests.GroupChest.ClaimPad.MainPad.MainPart,0)
+    firetouchinterest(chr.HumanoidRootPart,game:GetService("Workspace").GameMechanics.Chests.DailyChest.ClaimPad.MainPart,0)
+    end
+    function Functions.Egg()
+        spawn(function()
+            while getgenv().Pet == true do 
+                for i,v in pairs(game:GetService("Workspace").GameMechanics.EggCapsules:GetChildren()) do 
+                   if v:IsA("Model") and v.Name == SelectEgg then 
+                   game:GetService("ReplicatedStorage").Events.Pets.RollForPet:FireServer(v.Name,"1")
+                        game:GetService("CoreGui").PurchasePromptApp.Enabled = false
+                        wait()
+                    end
+                end
+            end
+        end)
+    end
+end
+
+
+
+
+-- Gui
+local library = loadstring(game:HttpGet(('https://raw.githubusercontent.com/AikaV3rm/UiLib/master/Lib.lua')))()
+
+local w = library:CreateWindow("Soda Champions")
+
+local b = w:CreateFolder("Farm") 
+
+b:Toggle("Auto Fizz",function(bool)
+    getgenv().Fizz = bool
+    if bool then 
+    Functions.Fizz()   
+    end
+end)
+
+b:Toggle("Collect Coins",function(bool)
+    getgenv().coins = bool
+    if bool then 
+        Functions.Coins()
+    end
+end)
+
+local b2 = w:CreateFolder("Egg")
+b2:Toggle("Buy Pet",function(bool)
+    getgenv().Pet = bool
+    if bool then 
+        Functions.Egg()
+    end
+end)
+b2:Dropdown("Select Egg",EggTab,true,function(Egg)
+    SelectEgg = Egg
+end)
+
+b2:DestroyGui()
