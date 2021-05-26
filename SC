@@ -1,17 +1,21 @@
+
+
+
 -- Options
 local chr = game.Players.LocalPlayer.Character
-getgenv().coins = false;
 getgenv().Fizz = false;
 getgenv().Pet = false;
 getgenv().Rebirth = false;
 getgenv().Upgrades = false;
+getgenv().Ring = false;
 local SelectEgg
 local SelectingReb
+local SelectWorld
 
 -- Tablolar 
 local EggTab = {}
 local RebirthTab = {}
-
+local WorldTab = {}
 -- Otomatik Yumurta Dropdown Güncelleyici
 local Eggs = game:GetService("Workspace").GameMechanics.EggCapsules:GetChildren()
 for i = 1,#Eggs do 
@@ -28,6 +32,14 @@ for i = 1,#RebirthFrame do
     table.insert(RebirthTab,v.Value)    
     end
 end
+-- Otomatik Dünya Dropdown Ekleyici
+local WorldFolder = game:GetService("Workspace").Worlds:GetChildren()
+for i = 1,#WorldFolder do 
+    local v = WorldFolder[i]
+    if v:IsA("Folder") then 
+    table.insert(WorldTab,v.Name)    
+    end
+end
 
 
 -- fonksiyonlar
@@ -40,32 +52,6 @@ local Functions = {}; do
             end
         end)
     end
-    
-    function Functions.Coins()
-        spawn(function()
-            while game:GetService("RunService").RenderStepped:Wait(1) do
-                if getgenv().coins == true then 
-                    for i,v in pairs(game:GetService("Workspace").Drops:GetDescendants()) do 
-                        local math1 = math.random(1,i)
-                        local math2 = math.random(1,i)
-                        local math3 = math.random(1,i)
-                        local math4 = math.random(1,i)
-                        local math5 = math.random(1,i)
-                        local math6 = math.random(1,i)
-                        local math7 = math.random(1,i)
-                        local math8 = math.random(1,i)
-                        if math1 or math2 or math3 or math4 or math5 or math6 or math7 or math8 then
-                            if v:IsA("TouchTransmitter") then 
-                            chr:SetPrimaryPartCFrame(v.Parent.CFrame)
-                            wait(1)
-                            end
-                        end
-                    end
-                end
-            end
-        end)
-    end
-    
     function Functions.ClaimChest()
     firetouchinterest(chr.HumanoidRootPart,game:GetService("Workspace").GameMechanics.Chests.FrostChest.ClaimPad.MainPad,0)
     firetouchinterest(chr.HumanoidRootPart,game:GetService("Workspace").GameMechanics.Chests.MagmaChest.ClaimPad.MainPad,0)
@@ -78,10 +64,17 @@ local Functions = {}; do
         spawn(function()
             while getgenv().Pet == true do 
                 for i,v in pairs(game:GetService("Workspace").GameMechanics.EggCapsules:GetChildren()) do 
-                   if v:IsA("Model") and v.Name == SelectEgg then 
-                   game:GetService("ReplicatedStorage").Events.Pets.RollForPet:FireServer(v.Name,"1")
+                   if v:IsA("Model") and v.Name == SelectEgg  then 
+                       if game:GetService("Players").LocalPlayer.Upgrades["Open 2 Eggs"].Value == true then
+                        game:GetService("ReplicatedStorage").Events.Pets.RollForPet:FireServer(v.Name,"2")
                         game:GetService("CoreGui").PurchasePromptApp.Enabled = false
-                        wait(1)
+                        else
+                            if game:GetService("Players").LocalPlayer.Upgrades["Open 2 Eggs"].Value == false then
+                            game:GetService("ReplicatedStorage").Events.Pets.RollForPet:FireServer(v.Name,"1")
+                            game:GetService("CoreGui").PurchasePromptApp.Enabled = false
+                            wait(1)
+                            end
+                        end
                     end
                 end
             end
@@ -107,6 +100,25 @@ local Functions = {}; do
             end
         end)
     end
+    function Functions.TpRing()
+        spawn(function()
+            while getgenv().Ring == true do 
+                for i,v in pairs(game:GetService("Workspace").Worlds:GetDescendants()) do 
+                    if v:IsA("TouchTransmitter") and v.Parent.Parent.Name:match("Ring") then
+                    chr:SetPrimaryPartCFrame(v.Parent.CFrame)
+                    wait()
+                    end
+                end
+            end
+        end) 
+    end
+    function Functions.Tpisland()
+        for i,v in pairs(game:GetService("Workspace").Worlds:GetDescendants()) do 
+            if v.Name == "TpPart" and v.Parent.Name == SelectWorld then 
+            chr:SetPrimaryPartCFrame(v.CFrame)
+            end
+        end
+    end
 end
 
 
@@ -126,20 +138,33 @@ b:Toggle("Auto Fizz",function(bool)
     end
 end)
 
-b:Toggle("Collect Coins",function(bool)
-    getgenv().coins = bool
+b:Toggle("Collect Ring",function(bool)
+    getgenv().Ring = bool
     if bool then 
-        Functions.Coins()
+        Functions.TpRing()
     end
 end)
+
+b:Toggle("Auto Coin Upgrades",function(bool)
+    getgenv().Upgrades = bool
+    if bool then 
+       Functions.Upgrade() 
+    end
+end)
+
+
 b:Toggle("Auto Rebirth",function(bool)
     getgenv().Rebirth = bool
     if bool then 
         Functions.Rebirth()
     end
 end)
-b:Dropdown("Select Reb Amount",RebirthTab,true,function(SelectReb)
+b:Dropdown("Select Rebirth Amount",RebirthTab,true,function(SelectReb)
     SelectingReb = SelectReb
+end)
+
+b:Button("Claim Chest Reward",function()
+    Functions.ClaimChest()
 end)
 
 
@@ -154,18 +179,17 @@ b2:Dropdown("Select Egg",EggTab,true,function(Egg)
     SelectEgg = Egg
 end)
 
-local b3 = w:CreateFolder("Get/Buy")
-b3:Toggle("Auto Coin Upgrades",function(bool)
-    getgenv().Upgrades = bool
-    if bool then 
-       Functions.Upgrade() 
-    end
-end)
+local b3 = w:CreateFolder("Teleport")
 
 
-b3:Button("Claim Chest Reward",function()
-    Functions.ClaimChest()
+b3:Dropdown("Select World",WorldTab,true,function(World)
+    SelectWorld = World
 end)
+
+b3:Button("Tp World",function()
+    Functions.Tpisland()
+end) 
+
 
 local w2 = library:CreateWindow("Main2")
 local b4 = w2:CreateFolder("PlayerStats")
@@ -222,4 +246,3 @@ b5:Label("Made By:efeeee#8151",{
     BgColor = Color3.fromRGB(69,69,69); -- Self Explaining
     
 }) 
-
